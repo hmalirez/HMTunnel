@@ -126,7 +126,7 @@ class MainRecyclerAdapter(
                     val isFav = item.profile.isFavorite
                     // Set correct icon immediately, then animate scale bounce
                     holder.itemMainBinding.ivFavorite.setImageResource(
-                        if (isFav) R.drawable.ic_star_filled else R.drawable.kid_star_24
+                        if (isFav) R.drawable.ic_star_filled else R.drawable.kid_star_outline_24
                     )
                     animateFavorite(holder.itemMainBinding.ivFavorite)
                 }
@@ -192,12 +192,16 @@ class MainRecyclerAdapter(
 
             val isFav = profile.isFavorite
             holder.itemMainBinding.ivFavorite.setImageResource(
-                    if (isFav) R.drawable.ic_star_filled else R.drawable.kid_star_24
+                    if (isFav) R.drawable.ic_star_filled else R.drawable.kid_star_outline_24
             )
 
             holder.itemMainBinding.ivFavorite.setOnClickListener {
                 profile.isFavorite = !profile.isFavorite
                 MmkvManager.encodeServerConfig(guid, profile)
+                holder.itemMainBinding.ivFavorite.setImageResource(
+                    if (profile.isFavorite) R.drawable.ic_star_filled else R.drawable.kid_star_outline_24
+                )
+                animateFavorite(holder.itemMainBinding.ivFavorite)
                 mainViewModel.reloadServerList()
             }
 

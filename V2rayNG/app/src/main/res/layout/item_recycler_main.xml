@@ -113,7 +113,7 @@
                         android:clickable="true"
                         android:focusable="true"
                         android:padding="@dimen/padding_spacing_dp8"
-                        android:src="@drawable/kid_star_24" />
+                        android:src="@drawable/kid_star_outline_24" />
 
                     <ImageView
                         android:id="@+id/iv_copy"

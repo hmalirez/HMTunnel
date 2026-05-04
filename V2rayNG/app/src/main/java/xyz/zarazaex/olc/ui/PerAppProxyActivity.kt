@@ -134,17 +134,6 @@ class PerAppProxyActivity : BaseActivity() {
             true
         }
 
-        R.id.import_proxy_app -> {
-            importProxyApp()
-            allowPerAppProxy()
-            true
-        }
-
-        R.id.export_proxy_app -> {
-            exportProxyApp()
-            true
-        }
-
         else -> super.onOptionsItemSelected(item)
     }
 

@@ -171,7 +171,6 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         mainViewModel.isTesting.observe(this) { testing ->
             setButtonsEnabled(!testing)
             if (testing) {
-                binding.btnSummaryLite.setImageResource(R.drawable.ic_stop_24dp)
                 // Allow stopping the test
                 binding.btnSummaryLite.isEnabled = true
                 binding.btnSummaryLite.alpha = 1.0f
@@ -417,12 +416,15 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
 
     private  fun applyRunningState(isLoading: Boolean, isRunning: Boolean) {
         if (isLoading) {
-            binding.fab.setImageResource(R.drawable.ic_fab_check)
+            binding.fab.isEnabled = false
+            binding.fab.alpha = 0.5f
             return
         }
 
         if (isRunning) {
-            binding.fab.setImageResource(R.drawable.ic_stop_24dp)
+            binding.fab.isEnabled = true
+            binding.fab.alpha = 1.0f
+            binding.fab.setImageResource(R.drawable.security_24)
             binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_active))
             binding.btnSummaryLite.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_active))
             binding.fab.contentDescription = getString(R.string.action_stop_service)
@@ -434,7 +436,9 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                 binding.btnSummaryLite.alpha = 0.5f
             }
         } else {
-            binding.fab.setImageResource(R.drawable.rocket_launch_24)
+            binding.fab.isEnabled = true
+            binding.fab.alpha = 1.0f
+            binding.fab.setImageResource(R.drawable.shield_24)
             binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_inactive))
             binding.btnSummaryLite.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_inactive))
             binding.fab.contentDescription = getString(R.string.tasker_start_service)

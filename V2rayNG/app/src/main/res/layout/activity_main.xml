@@ -107,7 +107,7 @@
                                 android:contentDescription="@string/tasker_start_service"
                                 android:focusable="true"
                                 android:nextFocusLeft="@+id/layout_test"
-                                android:src="@drawable/rocket_launch_24"
+                                android:src="@drawable/shield_24"
                                 app:tint="@color/colorWhite"
                                 app:fabSize="normal"
                                 app:maxImageSize="28dp"

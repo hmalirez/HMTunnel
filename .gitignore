@@ -65,3 +65,4 @@ Thumbs.db
 .DS_Store
 add_subscription_mmkv.py
 .gitignore
+material-design-icons
