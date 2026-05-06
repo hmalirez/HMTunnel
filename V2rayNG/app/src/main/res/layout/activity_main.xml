@@ -93,11 +93,9 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             app:tabIndicatorFullWidth="true"
-                            app:tabMode="auto"
+                            app:tabMode="fixed"
                             app:tabGravity="fill"
                             app:tabMaxWidth="0dp"
-                            app:tabPaddingStart="16dp"
-                            app:tabPaddingEnd="16dp"
                             app:tabRippleColor="@android:color/transparent"
                             app:tabTextAppearance="@style/TabLayoutTextStyle" />
 
