@@ -47,7 +47,9 @@
                         android:layout_height="wrap_content"
                         android:indeterminate="true"
                         android:visibility="invisible"
-                        app:indicatorColor="@color/md_theme_primary" />
+                        app:indicatorColor="?attr/colorPrimary"
+                        app:trackCornerRadius="0dp"
+                        app:trackColor="@android:color/transparent" />
 
                     <LinearLayout
                         android:id="@+id/tab_slot_top"
