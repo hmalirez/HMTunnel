@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import xyz.zarazaex.olc.AppConfig
 import xyz.zarazaex.olc.dto.PingProgressUpdate
 import xyz.zarazaex.olc.dto.PingResultItem
+import xyz.zarazaex.olc.handler.MmkvManager
 import xyz.zarazaex.olc.handler.SettingsManager
 import xyz.zarazaex.olc.handler.V2RayNativeManager
 import xyz.zarazaex.olc.handler.V2rayConfigManager
@@ -57,8 +58,15 @@ class RealPingWorkerService(
 
         scope.launch(Dispatchers.IO) {
             try {
-                // Prepare configurations in parallel for faster startup
-                val shuffledGuids = guids.shuffled()
+                // Prepare configurations in parallel for faster startup.
+                // Keep the currently selected server at the front so it gets a result first.
+                val selectedGuid = MmkvManager.getSelectServer()
+                val shuffledGuids = if (selectedGuid != null && guids.contains(selectedGuid)) {
+                    val rest = guids.filter { it != selectedGuid }.shuffled()
+                    listOf(selectedGuid) + rest
+                } else {
+                    guids.shuffled()
+                }
                 val deferredItems = shuffledGuids.map { guid ->
                     async(Dispatchers.IO) {
                         val configResult = V2rayConfigManager.getV2rayConfig4Speedtest(context, guid)
@@ -135,7 +143,7 @@ class RealPingWorkerService(
 
     private fun sendBatchUpdate(update: PingProgressUpdate) {
         MessageUtil.sendMsg2UI(context, AppConfig.MSG_MEASURE_CONFIG_BATCH, update)
-        MessageUtil.sendMsg2UI(context, AppConfig.MSG_MEASURE_CONFIG_NOTIFY, "${update.finished} / ${update.total}")
+        MessageUtil.sendMsg2UI(context, AppConfig.MSG_MEASURE_CONFIG_NOTIFY, "${update.finished}/${update.total}")
     }
 
     fun cancel() {

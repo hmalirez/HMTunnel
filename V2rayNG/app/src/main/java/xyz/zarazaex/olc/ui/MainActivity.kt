@@ -226,6 +226,9 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                 binding.btnSummaryLite.backgroundTintList = ColorStateList.valueOf(
                     com.google.android.material.color.MaterialColors.getColor(this, com.google.android.material.R.attr.colorSecondaryContainer, 0)
                 )
+                if (!isLiteTesting) {
+                    showStatus("Проверка завершена")
+                }
             }
         }
 
@@ -253,7 +256,9 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             }
         }
         mainViewModel.isRunning.observe(this) { isRunning ->
-            applyRunningState(false, isRunning)
+            if (!isFabOperationInProgress) {
+                applyRunningState(false, isRunning)
+            }
             // Как только VPN только что подключился — обновляем подписки через него
             if (isRunning && !wasRunning) {
                 updateSubsViaVpn()
@@ -453,6 +458,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             return
         }
         isFabOperationInProgress = true
+        applyRunningState(isLoading = true, isRunning = false)
 
         lifecycleScope.launch {
             try {
@@ -464,6 +470,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
                 delay(1000)
             } catch (e: Exception) {
                 Log.e(AppConfig.TAG, "Error in restartV2Ray", e)
+                applyRunningState(isLoading = false, isRunning = mainViewModel.isRunning.value == true)
             } finally {
                 isFabOperationInProgress = false
             }
@@ -507,16 +514,16 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
             com.google.android.material.color.MaterialColors.getColor(this, com.google.android.material.R.attr.colorSecondaryContainer, 0)
         )
         if (isLoading) {
-            // Во время загрузки FAB и молния остаются доступны для отмены
+            // Во время подключения: только FAB доступен для отмены, всё остальное заблокировано
             binding.fab.isEnabled = true
             binding.fab.alpha = 1.0f
+            binding.fab.backgroundTintList = secContainer
+            binding.btnSummaryLite.isEnabled = false
+            binding.btnSummaryLite.alpha = 0.5f
             val menu = binding.toolbar.menu
             menu.findItem(R.id.real_ping_all)?.let { it.isEnabled = false; it.icon?.alpha = 128 }
             menu.findItem(R.id.filter_by_country)?.let { it.isEnabled = false; it.icon?.alpha = 128 }
             menu.findItem(R.id.sub_update)?.let { it.isEnabled = false; it.icon?.alpha = 128 }
-            binding.btnSummaryLite.isEnabled = true
-            binding.btnSummaryLite.alpha = 1.0f
-            binding.fab.backgroundTintList = secContainer
             setStatusDot(DotState.LOADING)
             return
         }
@@ -550,9 +557,30 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
         dot.alpha = 1f; dot.scaleX = 1f; dot.scaleY = 1f
         dot.backgroundTintList = ColorStateList.valueOf(when (state) {
             DotState.CONNECTED -> ContextCompat.getColor(this, R.color.status_connected)
-            DotState.LOADING   -> com.google.android.material.color.MaterialColors.getColor(this, com.google.android.material.R.attr.colorPrimaryContainer, 0)
+            DotState.LOADING   -> com.google.android.material.color.MaterialColors.getColor(this, androidx.appcompat.R.attr.colorPrimary, 0)
             DotState.IDLE      -> com.google.android.material.color.MaterialColors.getColor(this, com.google.android.material.R.attr.colorOutline, 0)
         })
+        if (state == DotState.LOADING) {
+            pulseDot(dot)
+        }
+    }
+
+    private fun pulseDot(dot: android.view.View) {
+        dot.animate()
+            .alpha(0.25f)
+            .setDuration(600)
+            .withEndAction {
+                if (dot.isAttachedToWindow) {
+                    dot.animate()
+                        .alpha(1f)
+                        .setDuration(600)
+                        .withEndAction {
+                            if (dot.isAttachedToWindow && mainViewModel.isTesting.value == true) {
+                                pulseDot(dot)
+                            }
+                        }.start()
+                }
+            }.start()
     }
 
     override fun onResume() {
@@ -590,6 +618,8 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
 
         searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
             override fun onMenuItemActionExpand(item: MenuItem): Boolean {
+                searchView.alpha = 0f
+                searchView.animate().alpha(1f).setDuration(220).start()
                 return true
             }
 
