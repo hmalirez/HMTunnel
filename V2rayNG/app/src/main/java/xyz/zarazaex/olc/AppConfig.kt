@@ -78,6 +78,10 @@ object AppConfig {
     const val PREF_DYNAMIC_COLORS = "pref_dynamic_colors"
     const val PREF_SUBSCRIPTIONS_BOTTOM = "pref_subscriptions_bottom"
 
+    /** Donate dialog flags. */
+    const val PREF_DONATE_DIALOG_DISMISSED = "pref_donate_dialog_dismissed"
+    const val PREF_DONATE_DIALOG_POSTPONE_UNTIL = "pref_donate_dialog_postpone_until"
+
     /** Cache keys. */
     const val CACHE_SUBSCRIPTION_ID = "cache_subscription_id"
 
