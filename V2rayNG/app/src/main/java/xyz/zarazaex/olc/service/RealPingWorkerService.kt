@@ -44,7 +44,6 @@ class RealPingWorkerService(
     companion object {
         private const val RESULT_BATCH_SIZE = 32
         private const val FLUSH_INTERVAL_MS = 1000L
-        private const val PING_CHUNK_SIZE = 20
     }
 
     data class PingItem(val guid: String, val config: String)
@@ -82,22 +81,19 @@ class RealPingWorkerService(
                 val items = deferredItems.awaitAll().filterNotNull()
 
                 if (items.isNotEmpty()) {
-                    val chunks = items.chunked(PING_CHUNK_SIZE)
-                    for (chunk in chunks) {
-                        if (!isActive) break
-                        val configsJson = JsonUtil.toJson(chunk)
-                        V2RayNativeManager.measureOutboundDelayBatch(
-                                configsJson,
-                                delayTestUrl,
-                                object : libv2ray.PingCallback {
-                                    override fun onResult(guid: String?, delay: Long) {
-                                        if (guid != null) {
-                                            reportResult(guid, delay)
-                                        }
+                    val configsJson = JsonUtil.toJson(items)
+
+                    V2RayNativeManager.measureOutboundDelayBatch(
+                            configsJson,
+                            delayTestUrl,
+                            object : libv2ray.PingCallback {
+                                override fun onResult(guid: String?, delay: Long) {
+                                    if (guid != null) {
+                                        reportResult(guid, delay)
                                     }
                                 }
-                        )
-                    }
+                            }
+                    )
                 }
 
                 flushPendingResults()
