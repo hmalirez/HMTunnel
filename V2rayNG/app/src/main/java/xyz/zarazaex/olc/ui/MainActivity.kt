@@ -507,6 +507,7 @@ class MainActivity : HelperBaseActivity(), NavigationView.OnNavigationItemSelect
     private fun showStatus(message: String) {
         statusResetJob?.cancel()
         binding.tvTestState.text = message
+        if (isFabOperationInProgress || mainViewModel.isTesting.value == true) return
         statusResetJob = lifecycleScope.launch {
             delay(3000)
             val isRunning = mainViewModel.isRunning.value == true
