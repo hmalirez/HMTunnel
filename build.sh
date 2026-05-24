@@ -11,7 +11,13 @@ __base="$(basename "${__file}" .sh)"
 trap 'echo -e "Aborted, error $? in command: $BASH_COMMAND"; trap ERR; exit 1' ERR INT
 
 export ANDROID_HOME=${ANDROID_HOME:-$HOME/android-sdk}
+if [[ ! -d $ANDROID_HOME ]]; then
+  export ANDROID_HOME=$HOME/android-sdk
+fi
 export NDK_HOME=${NDK_HOME:-$ANDROID_HOME/ndk/25.2.9519653}
+if [[ ! -d $NDK_HOME ]]; then
+  export NDK_HOME=$ANDROID_HOME/ndk/25.2.9519653
+fi
 
 if [[ ! -d $NDK_HOME ]]; then
   echo "Android NDK: NDK_HOME not found. please set env \$NDK_HOME"
