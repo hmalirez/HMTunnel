@@ -95,14 +95,20 @@ jobs:
         cd ${{ github.workspace }}/V2rayNG
         echo "sdk.dir=${ANDROID_HOME}" > local.properties
         chmod 755 gradlew
-        ./gradlew assembleDebug
+        ./gradlew :app:assembleFdroidDebug -PABI_FILTERS=arm64-v8a;armeabi-v7a
 
     - name: Find and Upload APK
       run: |
-        echo "Searching for APK files..."
-        find V2rayNG/app/build/outputs/apk -name "*.apk" -type f
+        echo "Searching for fdroid split APK files..."
+        find V2rayNG/app/build/outputs/apk/fdroid/debug -type f \( \
+          -name "app-fdroid-arm64-v8a-debug.apk" -o \
+          -name "app-fdroid-armeabi-v7a-debug.apk" \
+        \) -print
         mkdir -p apk-output
-        find V2rayNG/app/build/outputs/apk -name "*.apk" -type f -exec cp {} apk-output/ \;
+        find V2rayNG/app/build/outputs/apk/fdroid/debug -type f \( \
+          -name "app-fdroid-arm64-v8a-debug.apk" -o \
+          -name "app-fdroid-armeabi-v7a-debug.apk" \
+        \) -exec cp {} apk-output/ \;
         
     - name: Upload APK Files
       uses: actions/upload-artifact@v7
