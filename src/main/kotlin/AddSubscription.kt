@@ -131,7 +131,7 @@ fun main() {
     
     val guid2 = manager.addSubscription(
         remarks = "БЕЛЫЕ W",
-        url = "https://raw.githubusercontent.com/hmalirez/Page/refs/heads/main/iran.txt",
+        url = "https://raw.githubusercontent.com/hmalirez/Page/refs/heads/main/iran2.txt",
         autoUpdate = true
     )
     println("Добавлена подписка БЕЛЫЕ W: $guid2")
@@ -145,8 +145,8 @@ fun main() {
     
     println("\nОбновление подписок...")
     manager.updateSubscription(guid1, "https://raw.githubusercontent.com/hmalirez/Page/refs/heads/main/iran.txt")
-    manager.updateSubscription(guid2, "https://raw.githubusercontent.com/hmalirez/Page/refs/heads/main/iran.txt")
-    manager.updateSubscription(guid3, "https://raw.githubusercontent.com/hmalirez/Page/refs/heads/main/iran.txt")
+    manager.updateSubscription(guid2, "https://raw.githubusercontent.com/hmalirez/Page/refs/heads/main/iran2.txt")
+    manager.updateSubscription(guid3, "https://raw.githubusercontent.com/hmalirez/Page/refs/heads/main/iran3.txt")
     
     println("\nПодписки успешно добавлены и обновлены в $mmkvPath")
 }
