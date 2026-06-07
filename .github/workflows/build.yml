@@ -1,16 +1,10 @@
-name: Build APK
+name: Build APK (Debug)
 
 on:
   workflow_dispatch:
-    inputs:
-      release_tag:
-        required: false
-        type: string
   push:
     branches:
       - master
-    tags:
-      - 'v*'
 
 permissions:
   contents: write
@@ -81,7 +75,6 @@ jobs:
         
         pushd AndroidLibXrayLite
         mkdir -p assets data
-        # Download geo assets if needed
         bash gen_assets.sh download
         cp -v data/*.dat assets/
         go mod tidy
@@ -97,84 +90,37 @@ jobs:
         distribution: 'temurin'
         java-version: '21'
 
-    - name: Extract version from tag
-      id: version
-      run: |
-        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-          TAG_NAME="${{ github.ref_name }}"
-          VERSION_NAME="${TAG_NAME#v}"
-        elif [[ "${{ github.event.inputs.release_tag }}" != "" ]]; then
-          TAG_NAME="${{ github.event.inputs.release_tag }}"
-          VERSION_NAME="${TAG_NAME#v}"
-        else
-          VERSION_NAME="dev-$(git rev-parse --short HEAD)"
-        fi
-        
-        IFS='.' read -ra VERSION_PARTS <<< "$VERSION_NAME"
-        MAJOR=${VERSION_PARTS[0]:-0}
-        MINOR=${VERSION_PARTS[1]:-0}
-        PATCH=${VERSION_PARTS[2]:-0}
-        VERSION_CODE=$((MAJOR * 1000000 + MINOR * 1000 + PATCH))
-        
-        echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
-        echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
-        echo "Version: $VERSION_NAME ($VERSION_CODE)"
-
-    - name: Decode Keystore
-      uses: timheuer/base64-to-file@v1.2.4
-      id: android_keystore
-      with:
-        fileName: "android_keystore.jks"
-        encodedString: ${{ secrets.APP_KEYSTORE_BASE64 }}
-
-    - name: Build APK
-      env:
-        KEYSTORE_FILE: ${{ steps.android_keystore.outputs.filePath }}
-        KEYSTORE_PASSWORD: ${{ secrets.APP_KEYSTORE_PASSWORD }}
-        KEY_ALIAS: ${{ secrets.APP_KEYSTORE_ALIAS }}
-        KEY_PASSWORD: ${{ secrets.APP_KEY_PASSWORD }}
+    - name: Build Debug APK
       run: |
         cd ${{ github.workspace }}/V2rayNG
         echo "sdk.dir=${ANDROID_HOME}" > local.properties
-        echo "Keystore file path: ${KEYSTORE_FILE}"
-        echo "Key alias: ${KEY_ALIAS}"
-        if [ -f "${KEYSTORE_FILE}" ]; then
-          echo "Keystore file exists"
-          ls -lh "${KEYSTORE_FILE}"
-          keytool -list -v -keystore "${KEYSTORE_FILE}" -storepass "${KEYSTORE_PASSWORD}" 2>&1 | head -20 || echo "Failed to list keystore contents"
-        else
-          echo "ERROR: Keystore file not found at ${KEYSTORE_FILE}"
-          exit 1
-        fi
         chmod 755 gradlew
-        ./gradlew assembleRelease --info 2>&1 | grep -i "signing\|keystore" || true
-    
+        ./gradlew assembleDebug
+
     - name: Upload arm64-v8a APK
       uses: actions/upload-artifact@v7
-      if: ${{  success() }}
+      if: ${{ success() }}
       with:
-        name: arm64-v8a
-        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/release/*arm64-v8a*.apk
+        name: arm64-v8a-debug
+        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/debug/*arm64-v8a*.apk
 
     - name: Upload armeabi-v7a APK
       uses: actions/upload-artifact@v7
-      if: ${{  success() }}
+      if: ${{ success() }}
       with:
-        name: armeabi-v7a
-        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/release/*armeabi-v7a*.apk
+        name: armeabi-v7a-debug
+        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/debug/*armeabi-v7a*.apk
 
     - name: Upload x86 APK
       uses: actions/upload-artifact@v7
-      if: ${{  success() }}
+      if: ${{ success() }}
       with:
-        name: x86-apk
-        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/release/*x86*.apk
+        name: x86-debug
+        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/debug/*x86*.apk
 
-    - name: Upload to release
-      uses: softprops/action-gh-release@v2
-      if: github.event.inputs.release_tag != '' || startsWith(github.ref, 'refs/tags/')
+    - name: Upload universal APK
+      uses: actions/upload-artifact@v7
+      if: ${{ success() }}
       with:
-        files: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/release/*.apk
-        tag_name: ${{ github.event.inputs.release_tag || github.ref_name }}
-        prerelease: false
-        generate_release_notes: true
+        name: universal-debug
+        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/debug/*universal*.apk
