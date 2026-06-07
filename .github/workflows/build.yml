@@ -97,9 +97,12 @@ jobs:
         chmod 755 gradlew
         ./gradlew assembleDebug
 
-    - name: Upload All Debug APKs (Simplified)
+    - name: Upload APK Files (30-50 MB)
       uses: actions/upload-artifact@v7
       with:
-        name: All-Debug-APKs
+        name: APK-Files
         path: |
-          V2rayNG/app/build/outputs/apk/*/debug/*.apk
+          V2rayNG/app/build/outputs/apk/fdroid/debug/*.apk
+          V2rayNG/app/build/outputs/apk/playstore/debug/*.apk
+        if-no-files-found: error
+        compression-level: 9
