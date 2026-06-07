@@ -95,7 +95,7 @@ jobs:
         cd ${{ github.workspace }}/V2rayNG
         echo "sdk.dir=${ANDROID_HOME}" > local.properties
         chmod 755 gradlew
-        ./gradlew :app:assembleFdroidDebug -PABI_FILTERS=arm64-v8a;armeabi-v7a
+        ./gradlew :app:assembleFdroidDebug -PABI_FILTERS='arm64-v8a;armeabi-v7a'
 
     - name: Find and Upload APK
       run: |
