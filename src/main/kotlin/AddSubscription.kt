@@ -118,7 +118,7 @@ class SubscriptionManager(private val mmkvPath: String) {
 }
 
 fun main() {
-    val mmkvPath = "/home/zarazaex/Projects/olcng/V2rayNG/app/src/main/assets/mmkv/SUB"
+    val mmkvPath = File("V2rayNG/app/src/main/assets/mmkv/SUB").absolutePath
     
     val manager = SubscriptionManager(mmkvPath)
     
