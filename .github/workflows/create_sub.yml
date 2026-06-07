@@ -1,4 +1,4 @@
-name: Create SUB File
+name: Create SUB File with Python
 
 on:
   workflow_dispatch:
@@ -8,58 +8,52 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Setup Kotlin
+
+      - name: Generate SUB file with Python
         run: |
-          sudo apt-get update
-          sudo apt-get install -y kotlin
-      
-      - name: Create and run Kotlin script
-        run: |
-          cat > CreateSub.kts << 'EOF'
-          import java.io.File
-          import java.io.RandomAccessFile
-          import java.util.UUID
-          
-          class MMKVWriter(private val filePath: String) {
-              fun writeEntry(key: String, json: String) {
-                  val file = RandomAccessFile(filePath, "rw")
-                  file.seek(file.length())
-                  val keyBytes = key.toByteArray(Charsets.UTF_8)
-                  val jsonBytes = json.toByteArray(Charsets.UTF_8)
-                  file.writeInt(keyBytes.size)
-                  file.write(keyBytes)
-                  file.writeInt(jsonBytes.size)
-                  file.write(jsonBytes)
-                  file.close()
-              }
-          }
-          
-          class SubscriptionManager(private val mmkvPath: String) {
-              private val writer = MMKVWriter(mmkvPath)
-          
-              fun addSubscription(remarks: String, url: String): String {
-                  val guid = UUID.randomUUID().toString().replace("-", "")
-                  val json = """{"remarks":"$remarks","url":"$url","enabled":true,"addedTime":${System.currentTimeMillis()},"lastUpdated":-1,"autoUpdate":true,"filter":"","allowInsecureUrl":false,"userAgent":""}"""
-                  writer.writeEntry(guid, json)
-                  return guid
-              }
-          }
-          
-          val mmkvPath = "V2rayNG/app/src/main/assets/mmkv/SUB"
-          File(mmkvPath).parentFile?.mkdirs()
-          val manager = SubscriptionManager(mmkvPath)
-          
-          manager.addSubscription("My Config 1", "https://raw.githubusercontent.com/hmalirez/Page/refs/heads/main/iran1.txt")
-          manager.addSubscription("My Config 2", "https://raw.githubusercontent.com/hmalirez/Page/refs/heads/main/iran2.txt")
-          manager.addSubscription("My Config 3", "https://raw.githubusercontent.com/hmalirez/Page/refs/heads/main/iran3.txt")
-          
-          println("✅ SUB file created successfully at: $mmkvPath")
+          python3 << EOF
+          import os
+          import uuid
+          import struct
+          import json
+
+          # لینک‌های سابسکریپشن خود را اینجا قرار دهید
+          subscriptions = [
+              {"remarks": "My Config 1", "url": "https://raw.githubusercontent.com/hmalirez/Page/refs/heads/main/iran1.txt"},
+              {"remarks": "My Config 2", "url": "https://raw.githubusercontent.com/hmalirez/Page/refs/heads/main/iran2.txt"},
+              {"remarks": "My Config 3", "url": "https://raw.githubusercontent.com/hmalirez/Page/refs/heads/main/iran3.txt"}
+          ]
+
+          output_path = "V2rayNG/app/src/main/assets/mmkv/SUB"
+          os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+          with open(output_path, "wb") as f:
+              for sub in subscriptions:
+                  guid = uuid.uuid4().hex
+                  data = {
+                      "remarks": sub["remarks"],
+                      "url": sub["url"],
+                      "enabled": True,
+                      "addedTime": 1775813540349,  # یک مقدار ثابت
+                      "lastUpdated": -1,
+                      "autoUpdate": True,
+                      "filter": "",
+                      "allowInsecureUrl": False,
+                      "userAgent": ""
+                  }
+                  json_str = json.dumps(data, separators=(',', ':'))
+                  
+                  key_bytes = guid.encode('utf-8')
+                  value_bytes = json_str.encode('utf-8')
+                  
+                  f.write(struct.pack('>i', len(key_bytes)))
+                  f.write(key_bytes)
+                  f.write(struct.pack('>i', len(value_bytes)))
+                  f.write(value_bytes)
+
+          print(f"✅ SUB file created successfully at: {output_path}")
           EOF
-          
-      - name: Run Kotlin script
-        run: kotlin CreateSub.kts
-        
+
       - name: Upload SUB file
         uses: actions/upload-artifact@v4
         with:
